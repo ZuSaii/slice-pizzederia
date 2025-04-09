@@ -13,6 +13,11 @@
   --red-hat-ff: "Red Hat Text", sans-serif;
 }
 
+.hidden {
+  display: none !important;
+  width: 0px;
+}
+
 body {
   background-color: var(--fantasy);
   padding-bottom: 24px;
@@ -55,6 +60,28 @@ body {
   top: -20px;
   width: fit-content;
   font-weight: 600;
+}
+
+.quantity-to-cart-btn {
+  align-items: center;
+  background-color: var(--tia-maria);
+  color: var(--white);
+  border-radius: 24px;
+  border: 1px solid var(--beaver);
+  display: flex;
+  font-size: 14px;
+  gap: 8px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 8px 24px;
+  position: relative;
+  top: -20px;
+  width: fit-content;
+  font-weight: 600;
+}
+
+.quantity-to-cart-btn img {
+  cursor: pointer;
 }
 
 .pizza-infos {
