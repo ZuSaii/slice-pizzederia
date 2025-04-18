@@ -45,6 +45,7 @@ function createPizzaCart(product) {
   const $quantityToCartBtn = document.createElement("span");
   $quantityToCartBtn.classList.add("quantity-to-cart-btn");
   $quantityToCartBtn.classList.add("hidden");
+  $quantityToCartBtn.setAttribute("data-id", product.id);
 
   const $quantityToCartBtnImgPlus = document.createElement("img");
   $quantityToCartBtnImgPlus.src = `/images/Add to Cart - Add Icon.svg`;
@@ -104,7 +105,7 @@ async function main() {
       addAndRemove("moins");
     });
     $quantityToCartBtnImgPlus.addEventListener("click", (e) => {
-      addAndRemove("plus", hookBasketProducDetailsQuantity, $pizzaItem);
+      addAndRemove("plus", pizza);
     });
   });
 }
@@ -208,6 +209,7 @@ function addToOrder(dataId, pizza, $addBtn, $quantityBtn) {
 
   const $basketProductItem = document.createElement("li");
   $basketProductItem.classList.add("basket-product-item");
+  $basketProductItem.setAttribute("data-id", dataId);
 
   const $basketProductItemName = document.createElement("span");
   $basketProductItemName.classList.add("basket-product-item-name");
@@ -271,29 +273,39 @@ function removeOrder(
   console.log(currentBasket);
 }
 
-function addAndRemove(value, $basketProductDetailsQuantity, $pizzaItem) {
-  if (value === "plus") {
-    const idItem = $pizzaItem.getAttribute("data-id");
-    currentBasket.forEach(function (item) {
-      if (item.id === idItem) {
-        item.quantity = item.quantity + 1;
+function addAndRemove(value, $pizzaItem) {
+  const id = $pizzaItem.id;
 
-        $basketProductDetailsQuantity.textContent = `${item.quantity}x`;
+  basketProductItem = document.querySelector(
+    `.basket-product-item[data-id="${id}"]`
+  );
+
+  console.log(basketProductItem);
+  const basketProductDetailsQuantity = basketProductItem.querySelector(
+    ".basket-product-details-quantity"
+  );
+
+  if (value === "plus") {
+    currentBasket.forEach(function (item) {
+      if (item.id === id) {
+        item.quantity++;
+        console.log(item.quantity);
+        console.log(basketProductDetailsQuantity);
+        basketProductDetailsQuantity.textContent = `${item.quantity}x`;
       }
-      console.log(item);
     });
   }
 
   if (value === "moins") {
-    const idItem = $pizzaItem.getAttribute("data-id");
     currentBasket.forEach(function (item) {
-      if (item.id === idItem) {
-        item.quantity = item.quantity - 1;
+      console.log(item);
+      if (item.id === id) {
+        item.quantity--;
 
-        $basketProductDetailsQuantity.textContent = `${item.quantity}x`;
+        basketProductDetailsQuantity.textContent = `${item.quantity}x`;
       }
       console.log(item);
-      currentBasketPanier = currentBasket.filter((i) => i.quantity !== 0);
+      currentBasket = currentBasket.filter((i) => i.quantity !== 0);
     });
   }
 }
