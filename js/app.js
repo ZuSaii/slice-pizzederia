@@ -2,31 +2,45 @@
 const $pizzaWrapper = document.querySelector(".pizzas-wrapper");
 const $basketProducts = document.querySelector(".basket-products");
 const $basketTotalQuantity = document.querySelector("h2");
+const $ordalModalWrapper = document.querySelector(".order-modal-wrapper")
+const $orderDetail = document.querySelector(".order-detail")
 
 //HTML BUTTONS/SELECT/INPUT/ANCRE
+const $confirmOrderBtn = document.querySelector(".confirm-order-btn")
+const $newOrderBtn = document.querySelector(".new-order-btn")
 
 //PARAMETRES
-let quantityProductBasket = 1;
 let resultsApi;
-let pizzaItem;
+let quantityProductBasket = "1"
 let currentBasketPanier;
-let i;
 let currentProduct;
-let basketProductItem;
+let pizzaDataNew
 let currentBasket = [];
 
 // http://10.59.122.27:3000/products
 
 async function getProducts() {
-  const res = await fetch("./products.json", {
+  const res = await fetch("https://prime-garfish-currently.ngrok-free.app/products", {
     method: "GET",
     headers: {
       "ngrok-skip-browser-warning": "1",
       "Content-Type": "application/json",
     },
+    redirect: "follow"
   });
   const data = await res.json();
   return data;
+}
+
+function finalAmount() {
+    let totalPriceAmount = 0
+
+    currentBasket.forEach(function (item) {
+        totalPriceAmount = totalPriceAmount + item.price
+    })
+
+
+    document.querySelector(".total-order-price").textContent = `$${totalPriceAmount}`
 }
 
 function createPizzaCart(product) {
@@ -46,6 +60,10 @@ function createPizzaCart(product) {
   $quantityToCartBtn.classList.add("quantity-to-cart-btn");
   $quantityToCartBtn.classList.add("hidden");
   $quantityToCartBtn.setAttribute("data-id", product.id);
+
+  const $quantityToCartBtnNumber = document.createElement("span")
+  $quantityToCartBtnNumber.classList.add("quantity-to-cart-btn-number")
+  $quantityToCartBtnNumber.textContent = "1"
 
   const $quantityToCartBtnImgPlus = document.createElement("img");
   $quantityToCartBtnImgPlus.src = `/images/Add to Cart - Add Icon.svg`;
@@ -71,7 +89,7 @@ function createPizzaCart(product) {
   $pizzaItem.appendChild($addToCartBtn);
   $pizzaItem.appendChild($quantityToCartBtn);
   $addToCartBtn.appendChild($addToCartBtnImg);
-  $quantityToCartBtn.textContent = "1";
+  $quantityToCartBtn.appendChild($quantityToCartBtnNumber)
   $quantityToCartBtn.appendChild($quantityToCartBtnImgMoins);
   $quantityToCartBtn.appendChild($quantityToCartBtnImgPlus);
   $pizzaItem.appendChild($pizzaInfos);
@@ -83,6 +101,7 @@ function createPizzaCart(product) {
 
 async function main() {
   const pizzaData = await getProducts();
+  pizzaDataNew = await pizzaData
 
   pizzaData.forEach((pizza) => {
     const [$pizzaItem, $quantityToCartBtnImgMoins, $quantityToCartBtnImgPlus] =
@@ -102,10 +121,10 @@ async function main() {
         );
       });
     $quantityToCartBtnImgMoins.addEventListener("click", (e) => {
-      addAndRemove("moins");
+      addAndRemove("moins", pizza, pizza.price, $pizzaItem.querySelector(".add-to-cart-btn"), $pizzaItem.querySelector(".quantity-to-cart-btn"));
     });
     $quantityToCartBtnImgPlus.addEventListener("click", (e) => {
-      addAndRemove("plus", pizza);
+      addAndRemove("plus", pizza, pizza.price, $pizzaItem.querySelector(".add-to-cart-btn"), $pizzaItem.querySelector(".quantity-to-cart-btn"));
     });
   });
 }
@@ -222,6 +241,7 @@ function addToOrder(dataId, pizza, $addBtn, $quantityBtn) {
   $basketProductDetailsQuantity.classList.add(
     "basket-product-details-quantity"
   );
+  $basketProductDetailsQuantity.textContent = "1x";
 
   const $basketProductDetailsUnitPrice = document.createElement("span");
   $basketProductDetailsUnitPrice.classList.add(
@@ -257,24 +277,21 @@ function addToOrder(dataId, pizza, $addBtn, $quantityBtn) {
   $basketProductDetails.appendChild($basketProductDetailsUnitPrice);
   $basketProductDetails.appendChild($basketProductDetailsTotalPrice);
   $basketProductItem.appendChild($basketProductRemoveIcon);
+  finalAmount()
 }
 
-function removeOrder(
-  $addBtn,
-  $quantityBtn,
-  $basketProductItem,
-  $basketProductRemoveIcon
-) {
+function removeOrder($addBtn, $quantityBtn, $basketProductItem, $basketProductRemoveIcon) {
   const idButtonRemove = $basketProductRemoveIcon.getAttribute("data-id");
   $basketProductItem.remove();
-  $addBtn.classList.remove("hidden");
-  $quantityBtn.classList.add("hidden");
+  $addBtn.classList.remove("hidden")
+  $quantityBtn.classList.add("hidden")
   currentBasket = currentBasket.filter((i) => i.id !== idButtonRemove);
   console.log(currentBasket);
+  finalAmount()
 }
 
-function addAndRemove(value, $pizzaItem) {
-  const id = $pizzaItem.id;
+function addAndRemove(value, $pizzaItem, price, $addBtn, $quantityBtn) {
+  let id = $pizzaItem.id;
 
   basketProductItem = document.querySelector(
     `.basket-product-item[data-id="${id}"]`
@@ -285,27 +302,92 @@ function addAndRemove(value, $pizzaItem) {
     ".basket-product-details-quantity"
   );
 
+  const basketProductDetailsTotalPrice = basketProductItem.querySelector(".basket-product-details-total-price")
+
+  const quantityToCartId = document.querySelector(`.quantity-to-cart-btn[data-id="${id}"]`)
+  
+  const quantityToCart = quantityToCartId.querySelector(".quantity-to-cart-btn-number")
+
   if (value === "plus") {
     currentBasket.forEach(function (item) {
       if (item.id === id) {
         item.quantity++;
-        console.log(item.quantity);
-        console.log(basketProductDetailsQuantity);
-        basketProductDetailsQuantity.textContent = `${item.quantity}x`;
+        item.price = item.price + price
+        basketProductDetailsQuantity.textContent = `${item.quantity}x`
+        quantityToCart.textContent = item.quantity;
+        basketProductDetailsTotalPrice.textContent = `$${item.price}`
       }
     });
   }
 
   if (value === "moins") {
     currentBasket.forEach(function (item) {
-      console.log(item);
+        console.log(item)
       if (item.id === id) {
         item.quantity--;
-
+        console.log(item.price)
+        item.price = item.price-price
+        console.log(item.price)
         basketProductDetailsQuantity.textContent = `${item.quantity}x`;
+        quantityToCart.textContent = item.quantity
+        basketProductDetailsTotalPrice.textContent = `$${item.price}`
       }
-      console.log(item);
       currentBasket = currentBasket.filter((i) => i.quantity !== 0);
+      if (item.quantity === 0) {
+        $addBtn.classList.remove("hidden")
+        $quantityBtn.classList.add("hidden")
+        quantityToCart.textContent = "1"
+        basketProductItem.remove();
+      }
     });
   }
+  finalAmount()
 }
+
+$confirmOrderBtn.addEventListener("click", function(e) {
+    confirmOrder()
+})
+
+function confirmOrder() {
+    if (currentBasket.length < 1) {
+        console.log("Une erreur est survenue vérifier bien que vous avez au moins une pizza dans votre panier !")
+        return
+    }
+    $ordalModalWrapper.classList.remove("hidden")
+    currentBasket.forEach(item => {
+        let currentPizza
+        pizzaDataNew.forEach(i => {
+            console.log(i)
+            if (i.id === item.id){
+                currentPizza = i
+            }
+        })
+
+        const $orderDetailProductItem = document.createElement("li")
+        $orderDetailProductItem.classList.add("order-detail-product-item")
+
+        const $orderDetailProductImage = document.createElement("img")
+        $orderDetailProductImage.classList.add("order-detail-product-image")
+        $orderDetailProductImage.src = currentPizza.image
+        
+        const $orderDetailProductName = document.createElement("span")
+        $orderDetailProductName.classList.add("order-detail-product-name")
+        $orderDetailProductName.textContent = currentPizza.name
+
+        const $orderDetailProductQuantity = document.createElement("span")
+        $orderDetailProductQuantity.classList.add("order-detail-product-quantity")
+        $orderDetailProductQuantity.textContent = currentPizza.name
+
+        const $orderDetailProductUnitPrice = document.createElement("span")
+        $orderDetailProductUnitPrice.classList.add("order-detail-product-unit-price")
+        $orderDetailProductName.textContent = currentPizza.name
+
+        const $orderDetailProductTotalPrice = document.createElement("span")
+        $orderDetailProductTotalPrice.classList("")
+        $orderDetailProductName.textContent = currentPizza.name
+    })
+}
+
+$newOrderBtn.addEventListener("click", (e) => {
+    $ordalModalWrapper.classList.add("hidden")
+})
