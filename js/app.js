@@ -15,9 +15,13 @@ let basketProductItem;
 let currentBasket = [];
 
 async function getProducts() {
-  const res = await fetch("http://10.59.122.27:3000/products");
+  const res = await fetch("http://10.59.122.27:3000/products"){
+    headers: {
+        "ngrok-skip-browser-warning": "1",
+        "Content-Type": "application/json",
+   },
+  }
   const data = await res.json();
-
   return data;
 }
 
@@ -231,26 +235,13 @@ function addToOrder(dataId, pizza, $addBtn, $quantityBtn) {
 }
 
 function removeOrder($addBtn, $quantityBtn, $basketProductItem, $basketProductRemoveIcon) {
-  $basketProductItem.classList.add("hidden");
   const idButtonRemove = $basketProductRemoveIcon.getAttribute("data-id")
-  console.log($addBtn, $quantityBtn)
-  currentBasket.forEach(item => {
-    if (idButtonRemove === item.id) {
+  $basketProductItem.remove()
       $addBtn.classList.remove("hidden");
       $quantityBtn.classList.add("hidden");
-    }
-    console.log(item.id)
-    console.log(idButtonRemove)
-    let currentBasketPanier = currentBasket.filter((i) => i.id !== idButtonRemove);
-    console.log(currentBasketPanier);
-    // const newBasket = noOrder(item);
-    // console.log(newBasket)
-  });
+    currentBasket = currentBasket.filter((i) => i.id !== idButtonRemove);
+    console.log(currentBasket);
 }
-
-function noOrder(item) {
-  return currentBasket.filter((elt) => elt.id !== item.id);
-}   
 
 function addAndRemoveRefresh(value, pizzaItemTarget, target) {;
 }
