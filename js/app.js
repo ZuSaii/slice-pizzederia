@@ -104,7 +104,7 @@ async function main() {
       addAndRemove("moins");
     });
     $quantityToCartBtnImgPlus.addEventListener("click", (e) => {
-      addAndRemove("plus", hookBasketProducDetailsQuantity(), $pizzaItem);
+      addAndRemove("plus", hookBasketProducDetailsQuantity, $pizzaItem);
     });
   });
 }
@@ -220,8 +220,6 @@ function addToOrder(dataId, pizza, $addBtn, $quantityBtn) {
   $basketProductDetailsQuantity.classList.add(
     "basket-product-details-quantity"
   );
-
-  function hookBasketProducDetailsQuantity() {return $basketProductDetailsQuantity} 
 
   const $basketProductDetailsUnitPrice = document.createElement("span");
   $basketProductDetailsUnitPrice.classList.add(
