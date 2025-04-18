@@ -17,8 +17,6 @@ let currentProduct;
 let pizzaDataNew
 let currentBasket = [];
 
-// http://10.59.122.27:3000/products
-
 async function getProducts() {
   const res = await fetch("https://prime-garfish-currently.ngrok-free.app/products", {
     method: "GET",
