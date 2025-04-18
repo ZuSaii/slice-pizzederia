@@ -353,15 +353,13 @@ function confirmOrder() {
         console.log("Une erreur est survenue vérifier bien que vous avez au moins une pizza dans votre panier !")
         return
     }
+
     $ordalModalWrapper.classList.remove("hidden")
+
     currentBasket.forEach(item => {
-        let currentPizza
-        pizzaDataNew.forEach(i => {
-            console.log(i)
-            if (i.id === item.id){
-                currentPizza = i
-            }
-        })
+        let currentPizza = pizzaDataNew.find(i => i.id === item.id)
+
+        if (!currentPizza) return
 
         const $orderDetailProductItem = document.createElement("li")
         $orderDetailProductItem.classList.add("order-detail-product-item")
@@ -376,18 +374,47 @@ function confirmOrder() {
 
         const $orderDetailProductQuantity = document.createElement("span")
         $orderDetailProductQuantity.classList.add("order-detail-product-quantity")
-        $orderDetailProductQuantity.textContent = currentPizza.name
+        $orderDetailProductQuantity.textContent = `${item.quantity}x`
 
         const $orderDetailProductUnitPrice = document.createElement("span")
         $orderDetailProductUnitPrice.classList.add("order-detail-product-unit-price")
-        $orderDetailProductName.textContent = currentPizza.name
+        $orderDetailProductUnitPrice.textContent = `$${(item.price / item.quantity)}`
 
         const $orderDetailProductTotalPrice = document.createElement("span")
-        $orderDetailProductTotalPrice.classList("")
-        $orderDetailProductName.textContent = currentPizza.name
+        $orderDetailProductTotalPrice.classList.add("order-detail-product-total-price")
+        $orderDetailProductTotalPrice.textContent = `$${item.price}`
+
+        $orderDetailProductItem.appendChild($orderDetailProductImage)
+        $orderDetailProductItem.appendChild($orderDetailProductName)
+        $orderDetailProductItem.appendChild($orderDetailProductQuantity)
+        $orderDetailProductItem.appendChild($orderDetailProductUnitPrice)
+        $orderDetailProductItem.appendChild($orderDetailProductTotalPrice)
+
+        $orderDetail.appendChild($orderDetailProductItem)
     })
+    let finalPriceOrder = 0
+    currentBasket.forEach(function(item){
+        finalPriceOrder = finalPriceOrder + item.price
+    })
+
+    const $orderDetailTotalPrice = document.createElement("li")
+    $orderDetailTotalPrice.classList.add("order-detail-total-price")
+
+    const $totalOrderTitle = document.createElement("span")
+    $totalOrderTitle.classList.add("total-order-title")
+    $totalOrderTitle.textContent = "Order total"
+
+    const $totalOrderPrice = document.createElement("span")
+    $totalOrderPrice.classList.add("total-order-price")
+    $totalOrderPrice.textContent = `$${finalPriceOrder}.00`
+
+    $orderDetailTotalPrice.appendChild($totalOrderTitle)
+    $orderDetailTotalPrice.appendChild($totalOrderPrice)
+
+    $orderDetail.appendChild($orderDetailTotalPrice)
 }
 
 $newOrderBtn.addEventListener("click", (e) => {
     $ordalModalWrapper.classList.add("hidden")
+    currentBasket = []
 })
