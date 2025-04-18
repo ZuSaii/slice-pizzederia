@@ -10,17 +10,21 @@ let quantityProductBasket = 1;
 let resultsApi;
 let pizzaItem;
 let currentBasketPanier;
+let i;
 let currentProduct;
 let basketProductItem;
 let currentBasket = [];
 
+// http://10.59.122.27:3000/products
+
 async function getProducts() {
-  const res = await fetch("http://10.59.122.27:3000/products"){
+  const res = await fetch("./products.json", {
+    method: "GET",
     headers: {
-        "ngrok-skip-browser-warning": "1",
-        "Content-Type": "application/json",
-   },
-  }
+      "ngrok-skip-browser-warning": "1",
+      "Content-Type": "application/json",
+    },
+  });
   const data = await res.json();
   return data;
 }
@@ -73,19 +77,34 @@ function createPizzaCart(product) {
   $pizzaInfos.appendChild($pizzaName);
   $pizzaInfos.appendChild($pizzaPrice);
 
-  return [$pizzaItem, $quantityToCartBtnImgMoins, $quantityToCartBtnImgPlus]
+  return [$pizzaItem, $quantityToCartBtnImgMoins, $quantityToCartBtnImgPlus];
 }
 
 async function main() {
   const pizzaData = await getProducts();
 
   pizzaData.forEach((pizza) => {
-    const [$pizzaItem, $quantityToCartBtnImgMoins, $quantityToCartBtnImgPlus] = createPizzaCart(pizza);
+    const [$pizzaItem, $quantityToCartBtnImgMoins, $quantityToCartBtnImgPlus] =
+      createPizzaCart(pizza);
 
     $pizzaWrapper.appendChild($pizzaItem);
 
-    $pizzaItem.querySelector(".add-to-cart-btn").addEventListener("click", function (e) {
-        document.querySelector(".empty-basket").classList.add("hidden");addToOrder($pizzaItem.getAttribute("data-id"),pizza,$pizzaItem.querySelector(".add-to-cart-btn"),$pizzaItem.querySelector(".quantity-to-cart-btn"));
+    $pizzaItem
+      .querySelector(".add-to-cart-btn")
+      .addEventListener("click", function (e) {
+        document.querySelector(".empty-basket").classList.add("hidden");
+        addToOrder(
+          $pizzaItem.getAttribute("data-id"),
+          pizza,
+          $pizzaItem.querySelector(".add-to-cart-btn"),
+          $pizzaItem.querySelector(".quantity-to-cart-btn")
+        );
+      });
+    $quantityToCartBtnImgMoins.addEventListener("click", (e) => {
+      addAndRemove("moins");
+    });
+    $quantityToCartBtnImgPlus.addEventListener("click", (e) => {
+      addAndRemove("plus", hookBasketProducDetailsQuantity(), $pizzaItem);
     });
   });
 }
@@ -172,7 +191,6 @@ main();
 // }
 
 function addToOrder(dataId, pizza, $addBtn, $quantityBtn) {
-  console.log(pizza);
   currentBasket.push({
     id: dataId,
     quantity: quantityProductBasket,
@@ -203,6 +221,8 @@ function addToOrder(dataId, pizza, $addBtn, $quantityBtn) {
     "basket-product-details-quantity"
   );
 
+  function hookBasketProducDetailsQuantity() {return $basketProductDetailsQuantity} 
+
   const $basketProductDetailsUnitPrice = document.createElement("span");
   $basketProductDetailsUnitPrice.classList.add(
     "basket-product-details-unit-price"
@@ -219,10 +239,15 @@ function addToOrder(dataId, pizza, $addBtn, $quantityBtn) {
   const $basketProductRemoveIcon = document.createElement("img");
   $basketProductRemoveIcon.classList.add("basket-product-remove-icon");
   $basketProductRemoveIcon.src = `/images/remove-icon.svg`;
-  $basketProductRemoveIcon.setAttribute("data-id", dataId)
+  $basketProductRemoveIcon.setAttribute("data-id", dataId);
   $basketProductRemoveIcon.addEventListener("click", function (e) {
     basketProductItem = $basketProductItem;
-    removeOrder($addBtn, $quantityBtn, $basketProductItem, $basketProductRemoveIcon);
+    removeOrder(
+      $addBtn,
+      $quantityBtn,
+      $basketProductItem,
+      $basketProductRemoveIcon
+    );
   });
 
   $basketProducts.appendChild($basketProductItem);
@@ -234,16 +259,18 @@ function addToOrder(dataId, pizza, $addBtn, $quantityBtn) {
   $basketProductItem.appendChild($basketProductRemoveIcon);
 }
 
-function removeOrder($addBtn, $quantityBtn, $basketProductItem, $basketProductRemoveIcon) {
-  const idButtonRemove = $basketProductRemoveIcon.getAttribute("data-id")
-  $basketProductItem.remove()
-      $addBtn.classList.remove("hidden");
-      $quantityBtn.classList.add("hidden");
-    currentBasket = currentBasket.filter((i) => i.id !== idButtonRemove);
-    console.log(currentBasket);
-}
-
-function addAndRemoveRefresh(value, pizzaItemTarget, target) {;
+function removeOrder(
+  $addBtn,
+  $quantityBtn,
+  $basketProductItem,
+  $basketProductRemoveIcon
+) {
+  const idButtonRemove = $basketProductRemoveIcon.getAttribute("data-id");
+  $basketProductItem.remove();
+  $addBtn.classList.remove("hidden");
+  $quantityBtn.classList.add("hidden");
+  currentBasket = currentBasket.filter((i) => i.id !== idButtonRemove);
+  console.log(currentBasket);
 }
 
 function addAndRemove(value, $basketProductDetailsQuantity, $pizzaItem) {
@@ -257,7 +284,6 @@ function addAndRemove(value, $basketProductDetailsQuantity, $pizzaItem) {
       }
       console.log(item);
     });
-    refreshOrder("plus");
   }
 
   if (value === "moins") {
@@ -271,8 +297,5 @@ function addAndRemove(value, $basketProductDetailsQuantity, $pizzaItem) {
       console.log(item);
       currentBasketPanier = currentBasket.filter((i) => i.quantity !== 0);
     });
-    refreshOrder("moins");
   }
 }
-
-function refreshOrder() {}
